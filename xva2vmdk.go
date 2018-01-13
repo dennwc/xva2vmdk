@@ -1,20 +1,20 @@
 package main
 
 import (
-	"flag"
-	"log"
 	"archive/tar"
-	"os"
-	"io"
-	"strings"
-	"strconv"
-	"path/filepath"
-	"fmt"
-	"math/rand"
-	"time"
-	"io/ioutil"
 	"crypto/sha1"
 	"encoding/hex"
+	"flag"
+	"fmt"
+	"io"
+	"io/ioutil"
+	"log"
+	"math/rand"
+	"os"
+	"path/filepath"
+	"strconv"
+	"strings"
+	"time"
 )
 
 var (
@@ -51,7 +51,7 @@ func run(path string) error {
 	rd := tar.NewReader(file)
 
 	disks := make(map[int]*os.File)
-	defer func(){
+	defer func() {
 		for _, f := range disks {
 			if fi, _ := f.Stat(); fi != nil {
 				writeVMDK(f.Name(), fi.Size())
@@ -60,10 +60,10 @@ func run(path string) error {
 		}
 	}()
 	var (
-		buf []byte
-		lb = -1
-		bs int64
-		sha = sha1.New()
+		buf        []byte
+		lb         = -1
+		bs         int64
+		sha        = sha1.New()
 		chk1, chk2 [sha1.Size]byte
 	)
 	for {
@@ -116,7 +116,7 @@ func run(path string) error {
 				continue
 			}
 			sha.Reset()
-			off := int64(bn)*bs
+			off := int64(bn) * bs
 			if lb != bn {
 				_, err = df.ReadAt(buf[:bs], off)
 				if err != nil {
@@ -139,10 +139,10 @@ func run(path string) error {
 		}
 		lb = bn
 		bs = h.Size
-		off := int64(bn)*bs
+		off := int64(bn) * bs
 		if fi, err := df.Stat(); err != nil {
 			return err
-		} else if sz := off+bs; sz > fi.Size() {
+		} else if sz := off + bs; sz > fi.Size() {
 			if err = df.Truncate(sz); err != nil {
 				return err
 			}
@@ -169,12 +169,12 @@ func init() {
 func writeVMDK(name string, size int64) error {
 	ext := filepath.Ext(name)
 	base := filepath.Base(name)
-	file, err := os.Create(strings.TrimSuffix(name, ext)+".vmdk")
+	file, err := os.Create(strings.TrimSuffix(name, ext) + ".vmdk")
 	if err != nil {
 		return err
 	}
 	defer file.Close()
-	_, err = fmt.Fprintf(file,`# Disk DescriptorFile
+	_, err = fmt.Fprintf(file, `# Disk DescriptorFile
 version=1
 CID=%08x
 parentCID=ffffffff
@@ -182,6 +182,6 @@ createType="monolithicFlat"
 
 # Extent description
 RW %d FLAT "%s" 0
-`, rand.Intn(0xffffffff), size/512, base)
+`, rand.Uint32(), size/512, base)
 	return err
 }
